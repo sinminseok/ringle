@@ -1,0 +1,82 @@
+plugins {
+	id 'java'
+	id 'idea'
+	id 'org.springframework.boot' version '3.4.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.minseok'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+def generated = 'src/main/generated'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+springBoot {
+	mainClass.set('com.minseok.ringle.RingleApplication')
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// Spring Boot
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// MySQL
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// QueryDSL (Jakarta 버전)
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+	// MapStruct
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	implementation "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+sourceSets {
+	main.java.srcDirs += [ generated ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+clean {
+	delete file(generated)
+}
+
+idea {
+	module {
+		sourceDirs += file(generated)
+		generatedSourceDirs += file(generated)
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
